@@ -17,34 +17,61 @@ export class OrderView extends Component {
         super();
         this.state = {
             orders: null,
+            visible: false,
+            detail: null,
         };
         that = this;
+        this.viewDetail = this.viewDetail.bind(this);
+        this.detailTemplate = this.detailTemplate.bind(this);
     }
 
-    componentWillMount(){
+    nameTemplate(rowData, column) {
+        return (
+            <div>
+                <span>{rowData.client.name + ' ' + rowData.client.lastName}</span>
+            </div>
+        );
+    }
+
+    detailTemplate(rowData, column) {
+        return (
+            <Button label='Ver Detalle' icon='fa fa-search' onClick={() => this.viewDetail(rowData)} />
+        );
+    }
+
+    totalTemplate(rowData, column) {
+        var total = rowData.quantity * rowData.article.unitCost;
+        return (<spam>{total}</spam>);
+    }
+
+    viewDetail(data) {
+        console.log('Dialog')
+        this.setState({ detail: data.detail, visible: true })
+    }
+
+    componentWillMount() {
         debugger
-        GetAllOrders(function(data,status,msg){
+        GetAllOrders(function (data, status, msg) {
             console.log(data);
-         switch (status) {
-             case 'OK':
-                 that.setState({ orders: data });
-                 break;
-             case 'ERROR':
-                 that.showMessage(msg, 'error');
-                 break;
-             default:
-                 that.showMessage(msg, 'info');
-                 break;
-         }
+            switch (status) {
+                case 'OK':
+                    that.setState({ orders: data });
+                    break;
+                case 'ERROR':
+                    that.showMessage(msg, 'error');
+                    break;
+                default:
+                    that.showMessage(msg, 'info');
+                    break;
+            }
         })
     }
 
-    render() {
-        let header = <div className="p-clearfix" style={{lineHeight:'1.87em'}}>Listado Ordenes </div>;
 
-        let footer = <div className="p-clearfix" style={{width:'100%'}}>
-            <Button style={{float:'left'}} label="Add" icon="pi pi-plus" onClick={this.addNew}/>
-        </div>;
+
+    render() {
+        let header = <div className="p-clearfix" style={{ lineHeight: '1.87em' }}>Listado Ordenes </div>;
+
         return (
             <div className="p-grid p-fluid">
                 <div className="p-col-12 p-lg-12">
@@ -54,14 +81,19 @@ export class OrderView extends Component {
                 </div>
                 <div className="p-col-12 p-lg-12">
                     <div className="card">
-                        <DataTable value={this.state.orders} paginator={true} rows={10} header={header} footer={footer}
-                            selectionMode="single" selection={this.state.selectedCar} onSelectionChange={e => this.setState({ selectedCar: e.value })}
-                            onRowSelect={this.onCarSelect}>
+                        <DataTable value={this.state.orders} paginator={true} rows={10} header={header}>
                             <Column field="date" header="Fecha" sortable={true} />
-                            <Column field="Cliente" header="Ciente" sortable={true} />
-                            <Column  header="Detalle" sortable={true} />
+                            <Column header="Ciente" body={this.nameTemplate} />
+                            <Column header="Detalle" body={this.detailTemplate} />
                         </DataTable>
-
+                        <Dialog header="Detalle" visible={this.state.visible} style={{ width: '50vw' }} onHide={() => this.setState({ visible: false })} >
+                            <DataTable value={this.state.detail} paginator={true} rows={10} header='Detalle Artículos'>
+                                <Column field="quantity" header="Cantidad" />
+                                <Column field="article.name" header="Detalle" />
+                                <Column field='article.unitCost' header="Precio Unitario" />
+                                <Column header="Total" body={this.totalTemplate} />
+                            </DataTable>
+                        </Dialog>
                     </div>
                 </div>
             </div>

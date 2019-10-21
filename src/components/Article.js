@@ -44,9 +44,7 @@ export class ArticleView extends Component {
     render() {
         let header = <div className="p-clearfix" style={{lineHeight:'1.87em'}}>Listado Artículos </div>;
 
-        let footer = <div className="p-clearfix" style={{width:'100%'}}>
-            <Button style={{float:'left'}} label="Add" icon="pi pi-plus" onClick={this.addNew}/>
-        </div>;
+        
 
         return (
             <div className="p-grid p-fluid">
@@ -58,7 +56,7 @@ export class ArticleView extends Component {
 
                 <div className="p-col-12 p-lg-12">
                     <div className="card">
-                        <DataTable value={this.state.articles} paginator={true} rows={10} header={header} footer={footer}
+                        <DataTable value={this.state.articles} paginator={true} rows={10} header={header} 
                             selectionMode="single" selection={this.state.selectedCar} onSelectionChange={e => this.setState({ selectedCar: e.value })}
                             onRowSelect={this.onCarSelect}>
                             <Column field="id" header="Código" sortable={true} />

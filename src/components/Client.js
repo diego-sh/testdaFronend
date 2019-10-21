@@ -38,13 +38,28 @@ export class ClientView extends Component {
 
 
     delete() {
-        let index = this.findSelectedCarIndex();
-        this.setState({
-            cars: this.state.cars.filter((val, i) => i !== index),
-            selectedCar: null,
-            car: null,
-            displayDialog: false
-        });
+        debugger;
+        let index = this.findSelectedClientIndex();
+        var clientAux = this.state.clients[index];
+        DeleteClient(clientAux, function (data, status, msg) {
+            switch (status) {
+                case 'OK':
+                    that.setState({
+                        clients: that.state.clients.filter((val, i) => i !== index),
+                        selectedClient: null,
+                        client: null,
+                        displayDialog: false
+                    });
+                    break;
+                case 'ERROR':
+                    that.showMessage(msg, 'error');
+                    break;
+                default:
+                    that.showMessage(msg, 'info');
+                    break;
+            }
+        })
+
     }
 
     findSelectedClientIndex() {
@@ -75,43 +90,39 @@ export class ClientView extends Component {
 
     save() {
         let clients = [...this.state.clients];
-        if (this.newClient)
-            clients.push(this.state.client);
-        else
-            clients[this.findSelectedClientIndex()] = this.state.client;
+        if (this.newClient) {
+            //clients.push(this.state.client);
+            this.createClient(this.state.client, 'create');
+        } else {
+            this.createClient(this.state.client, 'update');
+        }
 
-        this.setState({ clients: clients, selectedClient: null, client: null, displayDialog: false });
+
+
     }
 
     /* Metodo para guardar/actualizar Cliente */
-    createClient() {
-        if (this.validateForm()) {
-            var client = { ci: null, name: null, lastName: null, email: null };
-            client.ci = this.state.ci;
-            client.name = this.state.name;
-            client.lastName = this.state.lastName;
-            client.email = this.state.email;
-
-            SaveClient(client, function (data, status, msg) {
-                switch (status) {
-                    case 'OK':
-                        var listClient = that.state.clients;
+    createClient(client, typeTx) {
+        SaveClient(client, function (data, status, msg) {
+            switch (status) {
+                case 'OK':
+                    var listClient = that.state.clients;
+                    if (typeTx == 'create') {
                         listClient.push(data);
-                        that.setState({ clients: listClient });
-                        break;
-                    case 'ERROR':
-                        that.showMessage(msg, 'error');
-                        break;
-                    default:
-                        that.showMessage(msg, 'info');
-                        break;
-                }
-            })
+                    } else {
+                        listClient[that.findSelectedClientIndex()] = data;
+                    }
+                    that.setState({ clients: listClient, selectedClient: null, client: null, displayDialog: false });
 
-        } else {
-            console.log("Error, llenar los campos");
-        }
-
+                    break;
+                case 'ERROR':
+                    that.showMessage(msg, 'error');
+                    break;
+                default:
+                    that.showMessage(msg, 'info');
+                    break;
+            }
+        })
     }
 
     /* Metodo para validad el formulario */
